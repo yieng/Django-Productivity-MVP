@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
+import pytz
 from .models import DailyTask, FlexTask
 
 def dashboard(request):
-    today = timezone.now().date()
+    hk_tz = pytz.timezone('Asia/Hong_Kong')
+    today = timezone.localtime(timezone.now(), hk_tz).date()
     
     # 1. Auto-seed core tasks if empty
     if not DailyTask.objects.filter(date=today).exists():
@@ -37,12 +39,19 @@ def dashboard(request):
     # 3. Calculations
     core = DailyTask.objects.filter(date=today)
     flex = FlexTask.objects.filter(date=today)
-    total_credits = sum(t.credit_value for t in core if t.is_complete) + \
-                    sum(t.credit_value for t in flex if t.is_complete)
+    
+    # Calculate sum of ALL completed tasks in the database
+    total_completed_core = DailyTask.objects.filter(is_complete=True)
+    total_completed_flex = FlexTask.objects.filter(is_complete=True)
+    
+    total_credits = sum(t.credit_value for t in total_completed_core) + \
+                    sum(t.credit_value for t in total_completed_flex)
     
     return render(request, 'dashboard.html', {
-        'core_tasks': core, 'flex_tasks': flex,
+        'core_tasks': core, 
+        'flex_tasks': flex,
         'total_credits': total_credits,
         'hilton_fund': min(total_credits, 6000),
-        'coaching_fund': max(0, total_credits - 6000)
+        'coaching_fund': max(0, total_credits - 6000),
+        'today': today
     })
