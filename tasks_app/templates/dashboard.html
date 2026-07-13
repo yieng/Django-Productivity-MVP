@@ -33,10 +33,14 @@
                 </div>
             {% endfor %}
             
-            <div class="input-group mt-3">
-                <input type="text" class="form-control" name="new_task" placeholder="Add a flex task...">
-                <button class="btn btn-outline-secondary" type="submit" name="add_task">Add Item</button>
-            </div>
+            {% if flex_tasks|length < 4 %}
+                <div class="input-group mt-3">
+                    <input type="text" class="form-control" name="new_task" placeholder="Add a flex task...">
+                    <button class="btn btn-outline-secondary" type="submit" name="add_task">Add Item</button>
+                </div>
+            {% else %}
+                <p class="text-muted">You have reached the maximum number of flex tasks.</p>
+            {% endif %}
             
             <button class="btn btn-primary mt-3 w-100" type="submit">Save Progress</button>
         </form>
